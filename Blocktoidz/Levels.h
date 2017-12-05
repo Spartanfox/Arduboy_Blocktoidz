@@ -1,5 +1,4 @@
 const unsigned char levels = 3;
-//I WANT PROGMEM BUT IT DOESNT WROR
   const unsigned char breakers  [][7*6] = {
      {
      0, 0, 0, 0, 0, 0,

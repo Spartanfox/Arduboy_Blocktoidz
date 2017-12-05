@@ -6,13 +6,13 @@
 
 Arduboy2 arduboy;
 ArduboyPlaytune tunes(arduboy.audio.enabled);
-//most variable poopys for the game thing
 boolean gray;
 boolean gameOver;
 boolean paused = true;
 unsigned char frames = 0;
 unsigned char levelNum = 0;
 unsigned char preview = 0;
+unsigned char store = 0;
 unsigned long score = 50000;
 int scoreAcc;
 struct Block;
@@ -95,6 +95,7 @@ struct Block{
 
 
 static void runGameOver(){
+  tunes.stopScore();
   tunes.playScore(music);
   gameOver = true;
   score =score * (levelNum+1);
@@ -196,11 +197,7 @@ void updateGame(){
       tunes.playScore(poot);
       paused^=true;
     }
-    if(arduboy.justPressed(B_BUTTON)){
-        //tunes.playScore(music);
-      }
     if(!paused){
-      
       if(arduboy.pressed(DOWN_BUTTON)){
         if(arduboy.justPressed(DOWN_BUTTON))tunes.playScore(blop);
         focused.cooldown-=2;
@@ -209,11 +206,10 @@ void updateGame(){
             focused.shape = preview;
             preview = resetBlock();
         }
-          
       }
       if(arduboy.justPressed(LEFT_BUTTON)){
         if(!collides(focused.shape,getBlock(focused.x-1,focused.y,&level))){
-        tunes.playScore(blop);
+          tunes.playScore(blop);
           focused.x--;
         }else{
           
@@ -228,7 +224,11 @@ void updateGame(){
         focused.try_rotate(&level);
       }
       if(arduboy.justPressed(B_BUTTON)){
-        //tunes.playScore(win);
+        tunes.playScore(blop);
+        unsigned char tmp = preview;
+        preview = store;
+        store = tmp;
+        
       }
       //update the block
       if(focused.cooldown<=0){
@@ -264,10 +264,12 @@ void setup() {
     tunes.initChannel(PIN_SPEAKER_1);
     tunes.toneMutesScore(true);
   #endif
-  srand(7/8);
+  srand(12345678);
+  random(0,3);
   level.loadLevel(&breakers[levelNum]);
   focused.shape = resetBlock();
   preview = resetBlock();
+  store = resetBlock();
 }
 void loop() {
   if (!(arduboy.nextFrame()))
@@ -276,7 +278,8 @@ void loop() {
   arduboy.clear();
   if(!gameOver)updateGame();
   if(!paused)focused.draw();
-  if(!paused)drawBlock(8*13,8*4,preview);
+  if(!paused)drawBlock(8*12,8*4,preview);
+  if(!paused)drawBlock(8*14,8*4,store);
   if(!gameOver)drawLevel(&level);
   arduboy.setCursor(0,0);
   if(!paused||gameOver)arduboy.print(score);
