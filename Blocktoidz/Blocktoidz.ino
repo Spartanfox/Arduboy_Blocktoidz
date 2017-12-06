@@ -3,17 +3,20 @@
 #include "Sprites.h"
 #include "Levels.h"
 #include "Tunes.h"
-
+#define gray 1
 Arduboy2 arduboy;
 ArduboyPlaytune tunes(arduboy.audio.enabled);
-boolean gray;
+
 boolean gameOver;
 boolean paused = true;
+
+unsigned char screen = 1;
 unsigned char frames = 0;
 unsigned char levelNum = 0;
 unsigned char preview = 0;
 unsigned char store = 0;
 unsigned long score = 50000;
+
 int scoreAcc;
 struct Block;
 struct Level;
@@ -27,7 +30,7 @@ static void runGameOver();
 
 struct Level{
   static const unsigned char x = 5*8;
-  static const unsigned char y = 0;
+  static const unsigned char y = 4;
   static const unsigned char block_width = 6;
   static const unsigned char block_height = 7;
   unsigned char breaker = 0;
@@ -58,11 +61,11 @@ struct Level{
 
 struct Block{
   unsigned char x = 0;
-  unsigned char y = level.block_height;
+  unsigned char y = level.block_height-1;
   unsigned char shape;
   unsigned char tris;
-  char cooldown;
-  unsigned char block_speed = 120;
+  unsigned char block_speed = 60;
+  char cooldown = block_speed;
   void rotate(){
       unsigned char rotated = shape&B_SOLID;
       rotated += rotated;
@@ -85,11 +88,11 @@ struct Block{
      else{
       tunes.playScore(blop);
         level->blocks[y][x] |= shape;
-        y =level->block_height;
+        y =level->block_height-1;
       }
   }
   void draw(){
-      drawBlock(x*8+level.x,y*8,shape);
+      drawBlock(x*8+level.x,y*8+level.y,shape);
     }
 } focused;
 
@@ -135,15 +138,13 @@ static unsigned char getBlock(int x, int y,Level* level){
 }
 static void drawBlock(char x, char y,unsigned char shape){
     y = 7*8-y;
-    
     if((shape&B_SOLID)==B_SOLID){
       arduboy.drawBitmap(x,y,solid,8,1); 
     } 
     else{
-      if(((shape&B_BOTTOM)==0)||((shape&B_RIGHT)==0)){
-        if(gray)arduboy.drawBitmap(x,y,empty,8,1); 
-        else arduboy.drawBitmap(x,y,emptyer,8,1); 
-      } 
+     // if(((shape&B_BOTTOM)==0)||((shape&B_RIGHT)==0)){
+     //   arduboy.drawBitmap(x,y,empty[frames&gray],8,1); 
+      //} 
       if((shape&B_TOP)!=0){
         arduboy.drawBitmap(x,y,top   ,8,1);  
       }
@@ -163,9 +164,10 @@ static void drawBlock(char x, char y,unsigned char shape){
     tunes.playScore(poot);
     if(v < level->breaker)level->breaker--;
     if(level->breaker == 0){
-      focused.block_speed = 120;
+      focused.block_speed = 60;
+      focused.cooldown = 120;
       tunes.playScore(win);
-      paused = true;
+      //paused = true;
       levelNum++;
       level->loadLevel(&breakers[levelNum]);
       return;
@@ -186,7 +188,7 @@ static void drawBlock(char x, char y,unsigned char shape){
         for(int x = 0; x < level->block_width;x++){
           unsigned char block =  level->blocks[y][x];
           if((block&B_SOLID)==B_SOLID)completed++;
-          drawBlock(level->x+x*8,level->y+y*8,block);
+          drawBlock(level->x+(x*8),level->y+(y*8),block);
           if(completed==level->block_width)removeRow(level,y);
         }
       }
@@ -211,9 +213,7 @@ void updateGame(){
         if(!collides(focused.shape,getBlock(focused.x-1,focused.y,&level))){
           tunes.playScore(blop);
           focused.x--;
-        }else{
-          
-          }
+        }
       }
       if(arduboy.justPressed(RIGHT_BUTTON)){
         tunes.playScore(blop);
@@ -230,30 +230,82 @@ void updateGame(){
         store = tmp;
         
       }
-      //update the block
-      if(focused.cooldown<=0){
-        focused.cooldown = focused.block_speed;
-          if(!collides(focused.shape,getBlock(focused.x,focused.y-1,&level))){
-            focused.y--;
-          }
-          else{
-           
-            focused.placeBlock(&level);
-            focused.shape = preview;
-            preview = resetBlock();
-            
-          }
+      else{
+        //update the block
+        if(focused.cooldown<=0){
+          focused.cooldown = focused.block_speed;
+            if(!collides(focused.shape,getBlock(focused.x,focused.y-1,&level))){
+              focused.y--;
+            }
+            else{
+             
+              focused.placeBlock(&level);
+              focused.shape = preview;
+              preview = resetBlock();
+              
+            }
+        }
+        focused.cooldown--;
+        score--;
+        if(score == 0)runGameOver();
       }
-      focused.cooldown--;
-      score--;
-      if(score == 0)runGameOver();
     }
     
     if(levelNum == levels){runGameOver();}
 }
+void runGame(){
+  if(!gameOver)updateGame();
+  if(!paused){
+  focused.draw();
+  //draw preview like ass untill i implement big blocks
+  drawBlock(8*13+4,8*5+4,preview);
+  //draw stored also like ass 
+  drawBlock(8*13+4,8*1+4,store);
+
+  }
+  drawLevel(&level);
+  //draw top and bottom borders
+  for(int i = 0; i < 10 ; i+=3){
+      if(i==6){
+        arduboy.drawBitmap((8*i)+8*5,0,crossTop    [frames&gray],8,1);
+        arduboy.drawBitmap((8*i)+8*5,60,crossBottom[frames&gray],8,1);
+        i++;
+      }
+      arduboy.drawBitmap((8*i)+8*5,0,border [frames&gray],8*3,1);
+      arduboy.drawBitmap((8*i)+8*5,60,border[frames&gray],8*3,1);
+  }
+  for(int i = 0; i < 8 ; i++){
+        arduboy.drawBitmap(15*8,i*8,column[frames&gray],8,1);
+  }
+  arduboy.drawBitmap(11*8,3*8+4,crossMid[frames&gray],8,1);
+  arduboy.drawBitmap(15*8,3*8+4,crossMid[frames&gray],8,1);
+  //line that shit up
+ 
+  arduboy.drawLine(11*8,3,11*8,(8*3)+4,WHITE);
+  arduboy.drawLine(12*8-1,3,12*8-1,(8*3)+4,WHITE);
+  
+  arduboy.drawLine(11*8,8*4+3,11*8,(8*7)+4,WHITE);
+  arduboy.drawLine(12*8-1,8*4+3,12*8-1,(8*7)+4,WHITE);
+  
+  arduboy.drawLine(12*8,3*8+4,15*8,3*8+4,WHITE);
+  arduboy.drawLine(12*8,4*8+3,15*8,4*8+3,WHITE);
+
+      //draw UI data
+  //writing tt seems to murder the performance so ill probably
+  //replace this all with bitmaps too
+  arduboy.setCursor(2,8);
+  arduboy.print(F("Score"));
+  arduboy.setCursor(2,16);
+  arduboy.print(score);
+  
+  arduboy.setCursor(2,32);
+  arduboy.print(F("Time"));
+  arduboy.setCursor(2,40);
+  arduboy.print(arduboy.cpuLoad());
+}
 void setup() {
   arduboy.begin();
-  arduboy.setFrameRate(120);
+  arduboy.setFrameRate(60);
   arduboy.clear();
   arduboy.display();
   
@@ -264,8 +316,7 @@ void setup() {
     tunes.initChannel(PIN_SPEAKER_1);
     tunes.toneMutesScore(true);
   #endif
-  srand(12345678);
-  random(0,3);
+  arduboy.initRandomSeed();
   level.loadLevel(&breakers[levelNum]);
   focused.shape = resetBlock();
   preview = resetBlock();
@@ -274,15 +325,21 @@ void setup() {
 void loop() {
   if (!(arduboy.nextFrame()))
     return;
-  gray^=true;
+  frames++;
   arduboy.clear();
-  if(!gameOver)updateGame();
-  if(!paused)focused.draw();
-  if(!paused)drawBlock(8*12,8*4,preview);
-  if(!paused)drawBlock(8*14,8*4,store);
-  if(!gameOver)drawLevel(&level);
-  arduboy.setCursor(0,0);
-  if(!paused||gameOver)arduboy.print(score);
+  switch(screen){
+    case 0:
+      //runMenu();
+      break;
+    case 1:
+      runGame();
+      break;
+        
+  }
+  
+
+  
+  
   random(0,3);
   arduboy.display();
 }

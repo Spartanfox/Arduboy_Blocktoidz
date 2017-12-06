@@ -5,28 +5,31 @@ const unsigned char B_BOTTOM = 4;
 const unsigned char B_LEFT = 8;
 const unsigned char B_SOLID = B_TOP|B_BOTTOM|B_LEFT|B_RIGHT;
 
-PROGMEM const unsigned char empty [8] = {
-    0b10000000,
-    0b00000000,
-    0b10000000,
-    0b00000000,
-    0b10000000,
-    0b00000000,
-    0b10000000,
-    0b01010101
-};
-PROGMEM const unsigned char emptyer [8] = {
-    0b00000000,
-    0b10000000,
-    0b00000000,
-    0b10000000,
-    0b00000000,
-    0b10000000,
-    0b00000000,
-    0b10101010
+ const unsigned char empty [][8] PROGMEM = {
+    {
+      0b10000000,
+      0b00000000,
+      0b10000000,
+      0b00000000,
+      0b10000000,
+      0b00000000,
+      0b10000000,
+      0b01010101
+    },
+
+    {
+      0b00000000,
+      0b10000000,
+      0b00000000,
+      0b10000000,
+      0b00000000,
+      0b10000000,
+      0b00000000,
+      0b10101010
+    }
 };
 
-PROGMEM const unsigned char solid [8] = {
+ const unsigned char solid [8] PROGMEM = {
     0b11111111,
     0b11111111,
     0b11111111,
@@ -37,7 +40,7 @@ PROGMEM const unsigned char solid [8] = {
     0b11111111
 };
 
-PROGMEM const unsigned char top [8] = {
+ const unsigned char top [8] PROGMEM = {
     0b00000001,
     0b00000011,
     0b00000111,
@@ -47,7 +50,7 @@ PROGMEM const unsigned char top [8] = {
     0b00000011,
     0b00000001
 };
-PROGMEM const unsigned char right [8] = {
+ const unsigned char right [8] PROGMEM = {
     0b00000000,
     0b00000000,
     0b00000000,
@@ -57,7 +60,7 @@ PROGMEM const unsigned char right [8] = {
     0b01111110,
     0b11111111
 };
-PROGMEM const unsigned char bottom [8] = {
+ const unsigned char bottom [8] PROGMEM = {
     0b10000000,
     0b11000000,
     0b11100000,
@@ -67,7 +70,7 @@ PROGMEM const unsigned char bottom [8] = {
     0b11000000,
     0b10000000
 };
-PROGMEM const unsigned char left [8] = {
+ const unsigned char left [8] PROGMEM = {
     0b11111111,
     0b01111110,
     0b00111100,
@@ -77,4 +80,152 @@ PROGMEM const unsigned char left [8] = {
     0b00000000,
     0b00000000
 };
+const unsigned char border [2][8*3] PROGMEM = {
+    {
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,    
+    0b00001011,
+    0b00001101,
+    },
 
+   {0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,    
+    0b00001101,
+    0b00001011,
+    },
+    
+  };
+
+const unsigned char crossBottom [2][8] PROGMEM = {
+    {
+    0b00001010,
+    0b00001100,    
+    0b00001000,
+    0b00001000,    
+    0b00001000,
+    0b00001000,    
+    0b00001100,
+    0b00001110,
+    },
+    {
+    0b00001110,
+    0b00001100,    
+    0b00001000,
+    0b00001000,    
+    0b00001000,
+    0b00001000,    
+    0b00001100,
+    0b00001010,
+    },
+    
+  };
+
+const unsigned char crossTop [2][8] PROGMEM = {
+    {
+    0b00000111,
+    0b00000011,    
+    0b00000001,
+    0b00000001,    
+    0b00000001,
+    0b00000001,    
+    0b00000011,
+    0b00000101,
+    },
+    {
+    0b00000101,
+    0b00000011,    
+    0b00000001,
+    0b00000001,    
+    0b00000001,
+    0b00000001,    
+    0b00000011,
+    0b00000111,
+    },
+    
+  };
+
+  const unsigned char crossMid [2][8] PROGMEM = {
+    {
+    0b01101010,
+    0b00110100,    
+    0b00011000,
+    0b00011000,    
+    0b00011000,
+    0b00011000,    
+    0b00110100,
+    0b01101010,
+    },
+    {
+    0b01010110,
+    0b00101100,    
+    0b00011000,
+    0b00011000,    
+    0b00011000,
+    0b00011000,    
+    0b00101100,
+    0b01010110,
+    },
+    
+  };
+
+    const unsigned char column [][8] PROGMEM = {
+   { 
+    0b11111111,
+    0b01010101,    
+    0b10101010,
+    0b01010101,    
+    0b10101010,
+    0b01010101,    
+    0b10101010,
+    0b11111111,},
+   { 
+    0b11111111,   
+    0b10101010,
+    0b01010101, 
+    0b10101010,
+    0b01010101, 
+    0b10101010,
+    0b01010101, 
+    0b11111111,},
+    
+  };
