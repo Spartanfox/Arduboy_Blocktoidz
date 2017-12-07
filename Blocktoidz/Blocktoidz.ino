@@ -15,7 +15,7 @@ unsigned char frames = 0;
 unsigned char levelNum = 0;
 unsigned char preview = 0;
 unsigned char store = 0;
-unsigned long score = 50000;
+unsigned long score = 10000;
 
 int scoreAcc;
 struct Block;
@@ -101,6 +101,7 @@ static void runGameOver(){
   tunes.stopScore();
   tunes.playScore(music);
   gameOver = true;
+  paused = true;
   score =score * (levelNum+1);
   }
 static unsigned char resetBlock(){
@@ -246,7 +247,7 @@ void updateGame(){
             }
         }
         focused.cooldown--;
-        score--;
+        if(frames&gray)score--;
         if(score == 0)runGameOver();
       }
     }
@@ -258,49 +259,53 @@ void runGame(){
   if(!paused){
   focused.draw();
   //draw preview like ass untill i implement big blocks
-  drawBlock(8*13+4,8*5+4,preview);
+  drawBlock(8*13,8*5+4,preview);
   //draw stored also like ass 
-  drawBlock(8*13+4,8*1+4,store);
+  drawBlock(8*13,8*1+4,store);
 
   }
   drawLevel(&level);
   //draw top and bottom borders
-  for(int i = 0; i < 10 ; i+=3){
-      if(i==6){
-        arduboy.drawBitmap((8*i)+8*5,0,crossTop    [frames&gray],8,1);
-        arduboy.drawBitmap((8*i)+8*5,60,crossBottom[frames&gray],8,1);
+  for(int i = 0; i < 16 ; i+=3){
+      if(i==0||i==4||i==11||i==15){
+        arduboy.drawBitmap((8*i),0,crossTop    [frames&gray],8,1);
+        arduboy.drawBitmap((8*i),60,crossBottom[frames&gray],8,1);
         i++;
       }
-      arduboy.drawBitmap((8*i)+8*5,0,border [frames&gray],8*3,1);
-      arduboy.drawBitmap((8*i)+8*5,60,border[frames&gray],8*3,1);
+      arduboy.drawBitmap((8*i),0,border [frames&gray],8*3,1);
+      arduboy.drawBitmap((8*i),60,border[frames&gray],8*3,1);
   }
   for(int i = 0; i < 8 ; i++){
-        arduboy.drawBitmap(15*8,i*8,column[frames&gray],8,1);
+        //arduboy.drawBitmap(15*8,i*8,column,8,1);
   }
-  arduboy.drawBitmap(11*8,3*8+4,crossMid[frames&gray],8,1);
-  arduboy.drawBitmap(15*8,3*8+4,crossMid[frames&gray],8,1);
-  //line that shit up
- 
+  arduboy.drawBitmap(11*8,3*8+4,crossMid,8,1);
+  arduboy.drawBitmap(15*8,3*8+4,crossMid,8,1);
+  //line that shit up makes the H lines around the preview/stored blocks
+ //no clue if drawing bitmaps is better but this method works
   arduboy.drawLine(11*8,3,11*8,(8*3)+4,WHITE);
   arduboy.drawLine(12*8-1,3,12*8-1,(8*3)+4,WHITE);
-  
   arduboy.drawLine(11*8,8*4+3,11*8,(8*7)+4,WHITE);
   arduboy.drawLine(12*8-1,8*4+3,12*8-1,(8*7)+4,WHITE);
-  
+  arduboy.drawLine(15*8,3,15*8,(8*3)+4,WHITE);
+  arduboy.drawLine(16*8-1,3,16*8-1,(8*3)+4,WHITE);
+  arduboy.drawLine(15*8,8*4+3,15*8,(8*7)+4,WHITE);
+  arduboy.drawLine(16*8-1,8*4+3,16*8-1,(8*7)+4,WHITE);
   arduboy.drawLine(12*8,3*8+4,15*8,3*8+4,WHITE);
   arduboy.drawLine(12*8,4*8+3,15*8,4*8+3,WHITE);
-
+  //
+  arduboy.drawLine(0,0,0,64,WHITE);
+  arduboy.drawLine(5*8-1,3,5*8-1,60,WHITE);
       //draw UI data
   //writing tt seems to murder the performance so ill probably
   //replace this all with bitmaps too
-  arduboy.setCursor(2,8);
+  arduboy.setCursor(5,8);
   arduboy.print(F("Score"));
-  arduboy.setCursor(2,16);
+  arduboy.setCursor(5,16);
   arduboy.print(score);
   
-  arduboy.setCursor(2,32);
+  arduboy.setCursor(8,32);
   arduboy.print(F("Time"));
-  arduboy.setCursor(2,40);
+  arduboy.setCursor(14,40);
   arduboy.print(arduboy.cpuLoad());
 }
 void setup() {
@@ -336,10 +341,6 @@ void loop() {
       break;
         
   }
-  
-
-  
-  
-  random(0,3);
+  //random(0,3);
   arduboy.display();
 }
